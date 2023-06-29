@@ -1,0 +1,101 @@
+# Choose how would you like your app to be run under Kubernetes management.
+# Options are mutually exclusive: deployment, statefulSet, daemonSet.
+# Hint:
+#  For stateless apps - deployment (80% of times)
+#  For drivers, daemons or anything that needs to be run on every node - daemonSet (0.1% of times)
+deployment:
+  enabled: true
+  rollingUpdate:
+    maxSurge: 50%
+    maxUnavailable: 50%
+    minReadySeconds: 2
+
+imagePullSecrets: gitlab
+daemonSet:
+  enabled: false
+
+# General settings
+appName: test-app
+replicaCount: 1
+terminationGracePeriodSeconds: 3
+
+
+# Scheduling options. Affects on which Nodes your app will be deployed.
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+## Configure app service
+## ref: https://kubernetes.io/docs/tutorials/services/
+service:
+  type: ClusterIP
+  protocol: TCP
+  targetPort: web
+
+## Configure ingress resourse
+## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+ingress:
+  enabled: true
+  host: test.erkai-task.com
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  path: /
+    ## all rewirites, redirects etc should be written in annotaions
+  tlsSecret: []
+  extraPath: []
+
+containerName: main
+image:
+  repository: 329082085800.dkr.ecr.us-east-1.amazonaws.com
+  branch: application
+  tag: latest
+  pullPolicy: Always
+command: []
+args: []
+env:
+  env: test123
+containerPorts:
+  - name: web
+    containerPort: 8080
+    protocol: TCP
+## Configure container resource limits
+## ref:
+resources: {}
+#  requests:
+#    cpu: 1000m
+#    memory: 512Mi
+#  limits:
+#    cpu: 1000m
+#    memory: 1024Mi
+
+## Configure container liveness and readiness probes
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes)
+livenessProbe:
+  enabled: false
+  type: httpGet
+  port: web
+  path: /health
+  httpHeaderName: #X-Custom-Header
+  httpHeaderValue: #Awesome
+  command: []
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+
+readinessProbe:
+  enabled: false
+  type: httpGet
+  port: web
+  path: /health
+  httpHeaderName: #X-Custom-Header
+  httpHeaderValue: #Awesome
+  command: []
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  successThreshold: 1
+  failureThreshold: 3
+
+
